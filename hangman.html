@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hangman V.0 | GP</title>
+   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" type="text/css" href="assets/css/reset.css">
+  <link rel="stylesheet" type="text/css" href="assets/css/hangmanStyle.css">
+
+  <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cyborg/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" ></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+ 
+<body>
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      
+        <div class="nav navbar-header"> 
+            <h3><a href="hangman.html">H A N G M A N</a></h3>
+        </div>
+         
+        <h5>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a data-target="#aboutModal" data-toggle="modal">About</a></li>
+        </ul>
+        </h5>
+
+    </div>
+  </nav>
+
+  <div class="container" id="main-content"> 
+    <!--  running light colors  --> 
+    <div class="divA">
+    </div>
+    
+    <div class="row">
+      <h1 id="word"></h1>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="row">
+                <h3 id="win"></h3>
+            </div>
+            <div class="row">
+                <h4 id="winList"></h4>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="row">
+              <h3 id="attempt"></h3>
+            </div>
+            <div class="row">
+              <h2 id="guess"></h2>
+            </div>
+            <div class="row">
+              <h3 id="msgLine"></h3>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="row">
+                <h3 id="loss"></h3> 
+            </div>
+            <div class="row">
+                <h4 id="lossList"></h4>
+            </div>
+        </div>
+    </div>
+
+  </div>     <!-- main-content ends -->
+
+  
+  <div class="panel-footer" style="text-align: center; width: 100%; position:fixed; bottom: 0;">
+    &copy; Copyright 2016 Gilbert Pagunuran
+  </div>
+ 
+
+<!-- About modal code follows  -->
+  <div class="modal fade" id="aboutModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header"> 
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body"> 
+          <p>A player is given 7 chances to guess the mystery word. <br>
+             The number of chances is not diminished with correct letter-guess. <br>
+             When a word is guessed correctly, a point is awarded to Win column. <br>
+             When the player exhausted all 7 counts, a penalty point is added to Loss column. <br>
+             The game is perpetually played after each round. <br>
+             Click on HANGMAN to reset the games. <br>
+          </p>
+        </div>
+      </div>   
+    </div>
+  </div>
+<!-- About modal code  ends -->
+
+<script type="text/javascript">
+
+//  initialize global variables here
+    var winCtr = 0;
+    var lossCtr = 0;
+    var winWords =[];
+    var lossWords = [];
+    initStats();
+
+    mysteryWord = getMysteryWord();
+    runningGuess = "";       
+    for (var i = 0; i < mysteryWord.length; i++) {
+        guessWordarray.push("_");
+        runningGuess = runningGuess + guessWordarray[i] + " ";
+    }
+
+    statDisplay();
+
+//function mainfunction()
+document.onkeypress = function(event)
+{
+    if (attemptCtr == 0 || hitCtr == mysteryWord.length) {     // game reset 
+               
+      if (attemptCtr == 0) {
+        $("<span>" + lossWords[lossCtr] + "</span><br>").appendTo("#lossList");
+        lossCtr += 1;
+      }
+      if (hitCtr == mysteryWord.length) {
+        $("<span>" + winWords[winCtr] + "</span><br>").appendTo("#winList");
+        winCtr += 1;
+      }
+
+      initStats();
+      mysteryWord = getMysteryWord();
+      runningGuess = "";       
+      for (var i = 0; i < mysteryWord.length; i++) {
+         guessWordarray.push("_");
+         runningGuess = runningGuess + guessWordarray[i] + " ";
+      }
+
+      statDisplay();
+      return;
+
+    } 
+
+//---------   Magic starts here  ----------------
+
+  var x = event.keyCode;
+    var key = String.fromCharCode(x);
+        key = key.toUpperCase();
+
+//---------  Validate key entered, should be alphabetic -------
+    if (( x > 64 && x < 91) || (x > 96 && x < 123 )) 
+        {
+        //  console.log(x + " is valid");  continue
+        } else {return;}
+
+//--------- key is valid but check if already pressed -----
+    var gLen = guesses.push(key);
+    var limit = gLen - 1;
+    for (var i = 0; i < limit; i++) {
+        if (key == guesses[i]) {
+            guesses.pop();
+            return;                         // duplicate letter guess
+        }
+    };
+
+//--------- At this point, key is qualified to be evaluated -----
+    t += 1;
+    message = " ";
+    runningGuess = "";
+    matchedFlag = "n";
+
+    for (var i = 0; i < mysteryWord.length; i++) {
+        if (key == mysteryWord.substr(i,1)) {   
+            hitCtr += 1;                    // count the hits
+            matchedFlag = "y";
+            guessWordarray[i] = key;
+        } 
+        runningGuess = runningGuess + guessWordarray[i] + " ";
+    }
+
+    if (matchedFlag == "n") {               // count the misses, chance remaining
+        missCtr += 1;
+        attemptCtr -= 1;
+    }  
+
+    if (t == 1) {reveal = key;}             // did not use array to store guesses
+    else {reveal = reveal + " , " + key;}
+
+    if (attemptCtr == 0) {
+        lossWords.push(mysteryWord);
+        message = " * * GAME OVER * *";
+        reveal = mysteryWord;
+    }
+    if (hitCtr == mysteryWord.length) {      
+        winWords.push(mysteryWord);
+        message = "*** " + winWords.length + "-Time Winner!  * *";
+    } 
+
+    statDisplay();
+
+};
+
+//---------   Functions --------------------
+
+function initStats() {
+    t = 0;
+    hitCtr = 0;
+    missCtr = 0;
+    attemptCtr = 7;
+    reveal = " ";
+    mysteryWord = " ";
+    guessWordarray = [];
+    guesses = [];
+    runningGuess = "_ _ _ _ _ _ _ _ _ _";
+    message = " ";
+}
+
+function statDisplay() {
+      
+    document.getElementById("word").innerHTML = runningGuess;   
+    document.getElementById("win").innerHTML = "Win: " + winCtr;
+    document.getElementById("loss").innerHTML = "Loss: " + lossCtr;
+    document.getElementById("attempt").innerHTML = "Guess: " + attemptCtr;
+    document.getElementById("guess").innerHTML = reveal;
+    document.getElementById("msgLine").innerHTML = message;  
+}
+
+function getMysteryWord(){
+    var dictionary = [
+        "HANGMAN",
+        "ELEMENT",
+        "CLASS",
+        "OBJECT",
+        "VARIABLE",         // 5
+        "DOCUMENT",
+        "FUNCTION",
+        "CONCATENATE",
+        "ARGUMENT",
+        "PARAMETER",        //10
+        "ITERATION",
+        "LOOP",
+        "GAME",
+        "EXERCISE",
+        "ATTENDANCE",       //15
+        "BREAK",
+        "SCRIPT",
+        "CODE",
+        "PROGRAM",
+        "ATTRIBUTE",         //20
+        "OPERAND",
+        "OPERATOR",
+        "ARRAY",
+        "JAZZ",
+        "ASSIGNMENT"         //25             
+        ];
+
+    var z = Math.floor((Math.random() * 24) + 0);
+
+    return dictionary[z];
+};
+
+</script>
+
+
+</body>
+ 
+</html>
